@@ -1,0 +1,128 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Member {
+  id              String          @id @default(cuid())
+  coach_id        String
+  name            String
+  email           String          @unique
+  document        String          @unique
+  birth_date      DateTime?
+  height          Float
+  weight          Float
+  zipcode         String?
+  address_details String?
+  house_number    String?
+  MemberHistory   MemberHistory[]
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+  Workout   Workout[]
+  Diet      Diet[]
+}
+
+model MemberHistory {
+  id        String   @id @default(cuid())
+  memberId  String
+  height    Float
+  weight    Float
+  updatedAt DateTime @default(now()) @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  member    Member   @relation(fields: [memberId], references: [id])
+
+  @@map("member_history")
+}
+
+model Workout {
+  id        String   @id @default(cuid())
+  coachId   String   @map("coach_id")
+  memberId  String
+  updatedAt DateTime @default(now()) @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  member    Member   @relation(fields: [memberId], references: [id])
+}
+
+model WorkoutItem {
+  id         String   @id @default(cuid())
+  reps       String?
+  weight     String?
+  interval   String?
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId String   @map("exercise_id")
+
+  @@map("workout_item")
+}
+
+model Exercise {
+  id          String        @id @default(cuid())
+  coachId     String
+  title       String
+  description String?
+  content     String?
+  thumbUrl    String?
+  WorkoutItem WorkoutItem[]
+
+  @@index([coachId, title])
+}
+
+model Food {
+  id           String @id @default(cuid())
+  name         String
+  kcal         String
+  carbohydrate String
+  protein      String
+  fat          String
+  coach_id     String
+
+  MealReplacement MealReplacement[]
+  Meal            Meal[]
+
+  @@index([name, coach_id])
+}
+
+model Diet {
+  id       String   @id @default(cuid())
+  member   Member   @relation(fields: [memberId], references: [id])
+  memberId String
+  Period   Period[]
+}
+
+model Period {
+  id     String @id @default(cuid())
+  title  String
+  dietId String
+
+  diet Diet   @relation(fields: [dietId], references: [id])
+  Meal Meal[]
+}
+
+model Meal {
+  id       String @id @default(cuid())
+  periodId String
+  foodId   String
+  quantity String
+
+  period          Period            @relation(fields: [periodId], references: [id])
+  food            Food              @relation(fields: [foodId], references: [id])
+  MealReplacement MealReplacement[]
+}
+
+model MealReplacement {
+  id       String @id @default(cuid())
+  foodId   String
+  mealId   String
+  quantity String
+
+  food Food @relation(fields: [foodId], references: [id])
+  meal Meal @relation(fields: [mealId], references: [id])
+
+  @@map("meal_replacement")
+}

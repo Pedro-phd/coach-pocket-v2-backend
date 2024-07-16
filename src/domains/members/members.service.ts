@@ -1,21 +1,22 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { CreateMemberDto } from './dto/create-member.dto'
 import { UpdateMemberDto } from './dto/update-member.dto'
 import { PrismaService } from 'src/lib/prisma/prisma.service'
 import { UserDecorator } from 'src/decorators/user.decorator'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
-import { CacheRepository } from 'src/lib/cache/cache.repository'
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
+import { Cache } from 'cache-manager'
 
 @Injectable()
 export class MembersService {
 	constructor(
 		private prisma: PrismaService,
-		private cache: CacheRepository,
+		@Inject(CACHE_MANAGER) private cacheService: Cache,
 	) {}
 
 	async create(createMemberDto: CreateMemberDto, user: UserDecorator) {
 		const CACHE_KEY = `findall-${user.id}`
-		await this.cache.clearCache(CACHE_KEY)
+		await this.cacheService.del(CACHE_KEY)
 
 		return await this.prisma.member.create({
 			data: {
@@ -28,7 +29,7 @@ export class MembersService {
 	async findAll(user: UserDecorator) {
 		const CACHE_KEY = `findall-${user.id}`
 
-		const cache = await this.cache.getData(CACHE_KEY)
+		const cache = await this.cacheService.get(CACHE_KEY)
 		if (cache) {
 			return cache
 		}
@@ -45,7 +46,7 @@ export class MembersService {
 			},
 		})
 
-		await this.cache.saveData(db, CACHE_KEY)
+		await this.cacheService.set(CACHE_KEY, db)
 
 		return db
 	}
@@ -53,7 +54,7 @@ export class MembersService {
 	async findOne(id: string, user: UserDecorator) {
 		const CACHE_KEY = id
 
-		const cache = await this.cache.getData(CACHE_KEY)
+		const cache = await this.cacheService.get(CACHE_KEY)
 		if (cache) {
 			return cache
 		}
@@ -77,7 +78,7 @@ export class MembersService {
 				},
 			})
 
-			await this.cache.saveData(db, CACHE_KEY)
+			await this.cacheService.set(CACHE_KEY, db)
 			return db
 		} catch (error) {
 			if (error instanceof PrismaClientKnownRequestError) {
@@ -114,7 +115,7 @@ export class MembersService {
 					coach_id: user.id,
 				},
 			})
-			await this.cache.clearCache(CACHE_KEY)
+			await this.cacheService.del(CACHE_KEY)
 			return null
 		} catch (error) {
 			if (error instanceof PrismaClientKnownRequestError) {
@@ -134,7 +135,7 @@ export class MembersService {
 					coach_id: user.id,
 				},
 			})
-			await this.cache.clearCache(CACHE_KEY)
+			await this.cacheService.del(CACHE_KEY)
 			return null
 		} catch (error) {
 			if (error instanceof PrismaClientKnownRequestError) {

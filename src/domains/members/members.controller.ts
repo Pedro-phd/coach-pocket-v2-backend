@@ -10,6 +10,7 @@ import {
 	Response,
 	HttpStatus,
 	HttpCode,
+	UseInterceptors,
 } from '@nestjs/common'
 import { MembersService } from './members.service'
 import { CreateMemberDto } from './dto/create-member.dto'
@@ -17,7 +18,8 @@ import { UpdateMemberDto } from './dto/update-member.dto'
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger'
 import { AuthGuard } from '@nestjs/passport'
 import { User, UserDecorator } from 'src/decorators/user.decorator'
-
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager'
+@CacheTTL(60 * 5) // 5 minutes of cache
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 @Controller('members')

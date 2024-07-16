@@ -1,16 +1,22 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { CreateMemberDto } from './dto/create-member.dto'
 import { UpdateMemberDto } from './dto/update-member.dto'
-import { PrismaService } from 'src/prisma/prisma.service'
+import { PrismaService } from 'src/lib/prisma/prisma.service'
 import { UserDecorator } from 'src/decorators/user.decorator'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+import { CacheRepository } from 'src/lib/cache/cache.repository'
 
 @Injectable()
 export class MembersService {
-	constructor(private prisma: PrismaService) {}
+	constructor(
+		private prisma: PrismaService,
+		private cache: CacheRepository,
+	) {}
 
 	async create(createMemberDto: CreateMemberDto, user: UserDecorator) {
-		console.log(user.id)
+		const CACHE_KEY = `findall-${user.id}`
+		await this.cache.clearCache(CACHE_KEY)
+
 		return await this.prisma.member.create({
 			data: {
 				...createMemberDto,
@@ -20,7 +26,14 @@ export class MembersService {
 	}
 
 	async findAll(user: UserDecorator) {
-		return await this.prisma.member.findMany({
+		const CACHE_KEY = `findall-${user.id}`
+
+		const cache = await this.cache.getData(CACHE_KEY)
+		if (cache) {
+			return cache
+		}
+
+		const db = await this.prisma.member.findMany({
 			where: {
 				coach_id: user.id,
 			},
@@ -31,11 +44,22 @@ export class MembersService {
 				updatedAt: true,
 			},
 		})
+
+		await this.cache.saveData(db, CACHE_KEY)
+
+		return db
 	}
 
 	async findOne(id: string, user: UserDecorator) {
+		const CACHE_KEY = id
+
+		const cache = await this.cache.getData(CACHE_KEY)
+		if (cache) {
+			return cache
+		}
+
 		try {
-			return await this.prisma.member.findUniqueOrThrow({
+			const db = await this.prisma.member.findUniqueOrThrow({
 				where: {
 					id,
 					coach_id: user.id,
@@ -52,6 +76,9 @@ export class MembersService {
 					},
 				},
 			})
+
+			await this.cache.saveData(db, CACHE_KEY)
+			return db
 		} catch (error) {
 			if (error instanceof PrismaClientKnownRequestError) {
 				throw new HttpException('Member not found', HttpStatus.NOT_FOUND)
@@ -61,6 +88,8 @@ export class MembersService {
 	}
 
 	async update(id: string, updateMemberDto: UpdateMemberDto, user: UserDecorator) {
+		const CACHE_KEY = id
+
 		try {
 			const member = await this.prisma.member.findFirstOrThrow({
 				where: {
@@ -85,6 +114,7 @@ export class MembersService {
 					coach_id: user.id,
 				},
 			})
+			await this.cache.clearCache(CACHE_KEY)
 			return null
 		} catch (error) {
 			if (error instanceof PrismaClientKnownRequestError) {
@@ -95,6 +125,8 @@ export class MembersService {
 	}
 
 	async remove(id: string, user: UserDecorator) {
+		const CACHE_KEY = id
+
 		try {
 			await this.prisma.member.delete({
 				where: {
@@ -102,6 +134,7 @@ export class MembersService {
 					coach_id: user.id,
 				},
 			})
+			await this.cache.clearCache(CACHE_KEY)
 			return null
 		} catch (error) {
 			if (error instanceof PrismaClientKnownRequestError) {

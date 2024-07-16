@@ -82,8 +82,7 @@ model Food {
   fat          String
   coach_id     String
 
-  MealReplacement MealReplacement[]
-  Meal            Meal[]
+  Meal Meal[]
 
   @@index([name, coach_id])
 }
@@ -105,24 +104,26 @@ model Period {
 }
 
 model Meal {
-  id       String @id @default(cuid())
-  periodId String
-  foodId   String
-  quantity String
+  id         String @id @default(cuid())
+  periodId   String
+  foodId     String
+  quantity   String
+  replace    Meal[] @relation("MealToReplace")
+  replacedBy Meal?  @relation("MealToReplace", fields: [mealId], references: [id])
 
-  period          Period            @relation(fields: [periodId], references: [id])
-  food            Food              @relation(fields: [foodId], references: [id])
-  MealReplacement MealReplacement[]
+  period Period  @relation(fields: [periodId], references: [id])
+  food   Food    @relation(fields: [foodId], references: [id])
+  mealId String?
 }
 
-model MealReplacement {
-  id       String @id @default(cuid())
-  foodId   String
-  mealId   String
-  quantity String
+// model MealReplacement {
+//   id       String @id @default(cuid())
+//   foodId   String
+//   mealId   String
+//   quantity String
 
-  food Food @relation(fields: [foodId], references: [id])
-  meal Meal @relation(fields: [mealId], references: [id])
+//   food Food @relation(fields: [foodId], references: [id])
+//   meal Meal @relation(fields: [mealId], references: [id])
 
-  @@map("meal_replacement")
-}
+//   @@map("meal_replacement")
+// }

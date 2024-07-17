@@ -8,6 +8,7 @@ import { PrismaService } from './lib/prisma/prisma.service'
 import { PrismaModule } from './lib/prisma/prisma.module'
 import { DietModule } from './domains/diet/diet.module'
 import { CacheModule } from '@nestjs/cache-manager'
+import { FoodModule } from './domains/food/food.module';
 import * as redisStore from 'cache-manager-redis-store'
 
 @Module({
@@ -27,6 +28,7 @@ import * as redisStore from 'cache-manager-redis-store'
 		MembersModule,
 		PrismaModule,
 		DietModule,
+		FoodModule,
 	],
 	controllers: [AppController],
 	providers: [AppService, PrismaService],

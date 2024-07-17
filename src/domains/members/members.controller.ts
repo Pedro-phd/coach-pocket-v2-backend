@@ -28,6 +28,7 @@ export class MembersController {
 	constructor(private readonly membersService: MembersService) {}
 
 	@ApiBody({ type: CreateMemberDto })
+	@HttpCode(HttpStatus.CREATED)
 	@Post()
 	create(@Body() createMemberDto: CreateMemberDto, @User() user: UserDecorator) {
 		return this.membersService.create(createMemberDto, user)
@@ -43,14 +44,14 @@ export class MembersController {
 		return this.membersService.findOne(id, user)
 	}
 
+	@HttpCode(HttpStatus.NO_CONTENT)
 	@Patch(':id')
-	@HttpCode(204)
 	async update(@Param('id') id: string, @Body() updateMemberDto: UpdateMemberDto, @User() user: UserDecorator) {
 		await this.membersService.update(id, updateMemberDto, user)
 		return null
 	}
 
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete(':id')
 	remove(@Param('id') id: string, @User() user: UserDecorator) {
 		return this.membersService.remove(id, user)

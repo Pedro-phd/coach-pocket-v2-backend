@@ -1,80 +1,62 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common'
-import { CreateMemberDto } from './dto/create-member.dto'
-import { UpdateMemberDto } from './dto/update-member.dto'
+import { CreateFoodDto } from './dto/create-food.dto'
+import { UpdateFoodDto } from './dto/update-food.dto'
+import { User, UserDecorator } from 'src/decorators/user.decorator'
 import { PrismaService } from 'src/lib/prisma/prisma.service'
-import { UserDecorator } from 'src/decorators/user.decorator'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
+import makeCacheKey from 'src/lib/make-cache-key'
 import { Cache } from 'cache-manager'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 
 @Injectable()
-export class MembersService {
+export class FoodService {
 	constructor(
 		private prisma: PrismaService,
 		@Inject(CACHE_MANAGER) private cacheService: Cache,
 	) {}
 
-	async create(createMemberDto: CreateMemberDto, user: UserDecorator) {
-		const CACHE_KEY = `findall-${user.id}`
+	async create(createFoodDto: CreateFoodDto, user: UserDecorator) {
+		const CACHE_KEY = makeCacheKey({ coachId: user.id })
 		await this.cacheService.del(CACHE_KEY)
 
-		return await this.prisma.member.create({
+		return await this.prisma.food.create({
 			data: {
-				...createMemberDto,
+				...createFoodDto,
 				coach_id: user.id,
 			},
 		})
 	}
 
 	async findAll(user: UserDecorator) {
-		const CACHE_KEY = `findall-${user.id}`
-
+		const CACHE_KEY = makeCacheKey({ coachId: user.id })
 		const cache = await this.cacheService.get(CACHE_KEY)
+
 		if (cache) {
 			return cache
 		}
 
-		const db = await this.prisma.member.findMany({
+		const db = await this.prisma.food.findMany({
 			where: {
 				coach_id: user.id,
-			},
-			select: {
-				id: true,
-				name: true,
-				email: true,
-				updatedAt: true,
 			},
 		})
 
 		await this.cacheService.set(CACHE_KEY, db)
-
 		return db
 	}
 
 	async findOne(id: string, user: UserDecorator) {
-		const CACHE_KEY = id
-
+		const CACHE_KEY = makeCacheKey({ coachId: user.id, action: id })
 		const cache = await this.cacheService.get(CACHE_KEY)
+
 		if (cache) {
 			return cache
 		}
-
 		try {
-			const db = await this.prisma.member.findUniqueOrThrow({
+			const db = await this.prisma.food.findFirstOrThrow({
 				where: {
-					id,
 					coach_id: user.id,
-				},
-				include: {
-					Diet: true,
-					Workout: true,
-					MemberHistory: {
-						select: {
-							height: true,
-							weight: true,
-							updatedAt: true,
-						},
-					},
+					id,
 				},
 			})
 
@@ -88,35 +70,23 @@ export class MembersService {
 		}
 	}
 
-	async update(id: string, updateMemberDto: UpdateMemberDto, user: UserDecorator) {
-		const CACHE_KEY = id
+	async update(id: string, updateFoodDto: UpdateFoodDto, user: UserDecorator) {
+		const CACHE_KEY_UNIQUE = makeCacheKey({ coachId: user.id, action: id })
+		const CACHE_KEY_ALL = makeCacheKey({ coachId: user.id })
 
 		try {
-			const member = await this.prisma.member.findFirstOrThrow({
+			await this.prisma.food.update({
+				data: {
+					...updateFoodDto,
+				},
 				where: {
 					id,
 					coach_id: user.id,
-				},
-			})
-			await this.prisma.memberHistory.create({
-				data: {
-					memberId: member.id,
-					height: member.height,
-					weight: member.weight,
 				},
 			})
 
-			await this.prisma.member.update({
-				data: {
-					...updateMemberDto,
-				},
-				where: {
-					id,
-					coach_id: user.id,
-				},
-			})
-			await this.cacheService.del(`findall-${user.id}`)
-			await this.cacheService.del(CACHE_KEY)
+			await this.cacheService.del(CACHE_KEY_UNIQUE)
+			await this.cacheService.del(CACHE_KEY_ALL)
 			return null
 		} catch (error) {
 			if (error instanceof PrismaClientKnownRequestError) {
@@ -127,17 +97,19 @@ export class MembersService {
 	}
 
 	async remove(id: string, user: UserDecorator) {
-		const CACHE_KEY = id
+		const CACHE_KEY_UNIQUE = makeCacheKey({ coachId: user.id, action: id })
+		const CACHE_KEY_ALL = makeCacheKey({ coachId: user.id })
 
 		try {
-			await this.prisma.member.delete({
+			await this.prisma.food.delete({
 				where: {
 					id,
 					coach_id: user.id,
 				},
 			})
-			await this.cacheService.del(CACHE_KEY)
-			await this.cacheService.del(`findall-${user.id}`)
+
+			await this.cacheService.del(CACHE_KEY_UNIQUE)
+			await this.cacheService.del(CACHE_KEY_ALL)
 			return null
 		} catch (error) {
 			if (error instanceof PrismaClientKnownRequestError) {

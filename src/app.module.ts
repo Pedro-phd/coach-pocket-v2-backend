@@ -6,9 +6,9 @@ import { ConfigModule } from '@nestjs/config'
 import { MembersModule } from './domains/members/members.module'
 import { PrismaService } from './lib/prisma/prisma.service'
 import { PrismaModule } from './lib/prisma/prisma.module'
-import { DietModule } from './domains/diet/diet.module'
 import { CacheModule } from '@nestjs/cache-manager'
-import { FoodModule } from './domains/food/food.module';
+import { FoodModule } from './domains/food/food.module'
+import { DietModule } from './domains/diet/diet.module'
 import * as redisStore from 'cache-manager-redis-store'
 
 @Module({

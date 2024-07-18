@@ -2,12 +2,25 @@ import { Injectable } from '@nestjs/common'
 import { CreateDietDto } from './dto/create-diet.dto'
 import { UpdateDietDto } from './dto/update-diet.dto'
 import { PrismaService } from 'src/lib/prisma/prisma.service'
+import { UserDecorator } from 'src/decorators/user.decorator'
 
 @Injectable()
 export class DietService {
 	constructor(private prisma: PrismaService) {}
 
-	create(createDietDto: CreateDietDto) {}
+	async create(createDietDto: CreateDietDto, user: UserDecorator) {
+		await this.prisma.diet.create({
+			data: {
+				memberId: createDietDto.memberId,
+				name: createDietDto.name,
+				meals: {
+					createMany: {
+						data: createDietDto.meal,
+					},
+				},
+			},
+		})
+	}
 
 	findAll() {
 		return 'This action returns all diet'

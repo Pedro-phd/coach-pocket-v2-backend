@@ -22,11 +22,11 @@ model Member {
   address_details String?
   house_number    String?
   MemberHistory   MemberHistory[]
+  diet            Diet[]
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @map("updated_at")
   Workout   Workout[]
-  Diet      Diet[]
 }
 
 model MemberHistory {
@@ -89,42 +89,22 @@ model Food {
 }
 
 model Diet {
-  id       String   @id @default(cuid())
-  member   Member   @relation(fields: [memberId], references: [id])
+  id       String @id @default(cuid())
+  name     String
+  member   Member @relation(fields: [memberId], references: [id])
   memberId String
-  Period   Period[]
-}
-
-model Period {
-  id     String @id @default(cuid())
-  title  String
-  dietId String
-
-  diet Diet   @relation(fields: [dietId], references: [id])
-  Meal Meal[]
+  meals    Meal[]
 }
 
 model Meal {
-  id         String @id @default(cuid())
-  periodId   String
-  foodId     String
-  quantity   String
-  replace    Meal[] @relation("MealToReplace")
-  replacedBy Meal?  @relation("MealToReplace", fields: [mealId], references: [id])
+  id        String  @id @default(cuid())
+  foodId    String
+  quantity  String
+  period    String
+  isReplace Boolean @default(false)
 
-  period Period  @relation(fields: [periodId], references: [id])
   food   Food    @relation(fields: [foodId], references: [id])
   mealId String?
+  Diet   Diet?   @relation(fields: [dietId], references: [id])
+  dietId String?
 }
-
-// model MealReplacement {
-//   id       String @id @default(cuid())
-//   foodId   String
-//   mealId   String
-//   quantity String
-
-//   food Food @relation(fields: [foodId], references: [id])
-//   meal Meal @relation(fields: [mealId], references: [id])
-
-//   @@map("meal_replacement")
-// }

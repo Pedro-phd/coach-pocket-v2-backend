@@ -21,6 +21,7 @@ export class FoodService {
 
 		return await this.prisma.food.create({
 			data: {
+				id: '1',
 				...createFoodDto,
 				coach_id: user.id,
 			},

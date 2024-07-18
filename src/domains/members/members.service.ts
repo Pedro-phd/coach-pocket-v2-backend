@@ -66,7 +66,26 @@ export class MembersService {
 					coach_id: user.id,
 				},
 				include: {
-					Diet: true,
+					diet: {
+						select: {
+							name: true,
+							meals: {
+								select: {
+									food: {
+										select: {
+											name: true,
+											kcal: true,
+											carbohydrate: true,
+											fat: true,
+											protein: true,
+										},
+									},
+									quantity: true,
+									isReplace: true,
+								},
+							},
+						},
+					},
 					Workout: true,
 					MemberHistory: {
 						select: {

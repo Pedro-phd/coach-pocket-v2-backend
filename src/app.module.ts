@@ -9,6 +9,7 @@ import { PrismaModule } from './lib/prisma/prisma.module'
 import { CacheModule } from '@nestjs/cache-manager'
 import { FoodModule } from './domains/food/food.module'
 import { DietModule } from './domains/diet/diet.module'
+import { ExerciseModule } from './domains/exercise/exercise.module';
 import * as redisStore from 'cache-manager-redis-store'
 
 @Module({
@@ -29,6 +30,7 @@ import * as redisStore from 'cache-manager-redis-store'
 		PrismaModule,
 		DietModule,
 		FoodModule,
+		ExerciseModule,
 	],
 	controllers: [AppController],
 	providers: [AppService, PrismaService],

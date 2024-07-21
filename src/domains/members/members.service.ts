@@ -82,6 +82,7 @@ export class MembersService {
 									},
 									quantity: true,
 									isReplace: true,
+									period: true,
 								},
 							},
 						},

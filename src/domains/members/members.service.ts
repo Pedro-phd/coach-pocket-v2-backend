@@ -86,8 +86,8 @@ export class MembersService {
 							},
 						},
 					},
-					Workout: true,
-					MemberHistory: {
+					workout: true,
+					memberHistory: {
 						select: {
 							height: true,
 							weight: true,

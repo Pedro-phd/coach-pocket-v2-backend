@@ -21,12 +21,12 @@ model Member {
   zipcode         String?
   address_details String?
   house_number    String?
-  MemberHistory   MemberHistory[]
+  memberHistory   MemberHistory[]
+  workout         Workout[]
   diet            Diet[]
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @map("updated_at")
-  Workout   Workout[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
 }
 
 model MemberHistory {

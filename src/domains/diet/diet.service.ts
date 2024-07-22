@@ -34,16 +34,16 @@ export class DietService {
 		const CACHE_KEY_ALL = makeCacheKey({ coachId: user.id })
 
 		try {
-			await this.prisma.diet.update({
-				data: {
-					...updateDietDto,
-				},
+			await this.prisma.diet.delete({
 				where: {
-					id,
+					id: id,
 					memberId: updateDietDto.memberId,
 				},
 			})
 
+			await this.create(updateDietDto, user)
+
+			await this.cacheService.del(updateDietDto.memberId)
 			await this.cacheService.del(CACHE_KEY_UNIQUE)
 			await this.cacheService.del(CACHE_KEY_ALL)
 			return null

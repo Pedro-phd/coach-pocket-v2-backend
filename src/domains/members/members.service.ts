@@ -68,6 +68,7 @@ export class MembersService {
 				include: {
 					diet: {
 						select: {
+							id: true,
 							name: true,
 							meals: {
 								select: {

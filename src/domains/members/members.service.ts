@@ -77,7 +77,7 @@ export class MembersService {
 											name: true,
 											kcal: true,
 											carbohydrate: true,
-											fat: true,
+											lipids: true,
 											protein: true,
 										},
 									},

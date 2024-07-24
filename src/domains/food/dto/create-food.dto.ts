@@ -16,7 +16,7 @@ export class CreateFoodDto {
 	protein: string
 	@ApiProperty()
 	@IsNotEmpty()
-	fat: string
+	lipids: string
 	@ApiProperty()
 	@IsNotEmpty()
 	referenceValue: string

@@ -17,5 +17,5 @@ export class UpdateFoodDto extends PartialType(CreateFoodDto) {
 	protein: string
 	@ApiProperty()
 	@IsNotEmpty()
-	fat: string
+	lipids: string
 }

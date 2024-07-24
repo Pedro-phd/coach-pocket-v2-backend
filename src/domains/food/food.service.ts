@@ -22,7 +22,7 @@ export class FoodService {
 		return await this.prisma.food.create({
 			data: {
 				...createFoodDto,
-				coach_id: user.id,
+				owner: user.id,
 			},
 		})
 	}
@@ -37,7 +37,7 @@ export class FoodService {
 
 		const db = await this.prisma.food.findMany({
 			where: {
-				coach_id: user.id,
+				owner: user.id,
 			},
 		})
 
@@ -55,7 +55,7 @@ export class FoodService {
 		try {
 			const db = await this.prisma.food.findFirstOrThrow({
 				where: {
-					coach_id: user.id,
+					owner: user.id,
 					id,
 				},
 			})
@@ -81,7 +81,7 @@ export class FoodService {
 				},
 				where: {
 					id,
-					coach_id: user.id,
+					owner: user.id,
 				},
 			})
 
@@ -104,7 +104,7 @@ export class FoodService {
 			await this.prisma.food.delete({
 				where: {
 					id,
-					coach_id: user.id,
+					owner: user.id,
 				},
 			})
 

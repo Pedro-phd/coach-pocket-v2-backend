@@ -74,18 +74,18 @@ model Exercise {
 }
 
 model Food {
-  id             String @id @default(cuid())
-  name           String
-  kcal           String
-  carbohydrate   String
-  protein        String
-  fat            String
-  referenceValue String @map("reference_value")
-  coach_id       String
+  id              String @id @default(cuid())
+  name            String
+  kcal            String
+  protein         String
+  carbohydrate    String
+  lipids          String
+  reference_value String @map("reference_value")
+  owner           String
 
   Meal Meal[]
 
-  @@index([name, coach_id])
+  @@index([name, owner])
 }
 
 model Diet {
